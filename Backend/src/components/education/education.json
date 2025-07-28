@@ -1,0 +1,31 @@
+{
+  "collectionName": "components_education_educations",
+  "info": {
+    "displayName": "education"
+  },
+  "options": {},
+  "attributes": {
+    "degree": {
+      "type": "string"
+    },
+    "universityName": {
+      "type": "string"
+    },
+    "endDate": {
+      "type": "string"
+    },
+    "eduCity": {
+      "type": "string"
+    },
+    "eduState": {
+      "type": "string"
+    },
+    "description": {
+      "type": "text"
+    },
+    "startDate": {
+      "type": "date"
+    }
+  },
+  "config": {}
+}

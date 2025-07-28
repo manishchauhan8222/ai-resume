@@ -1,0 +1,8 @@
+.resume-list {
+  @apply w-52 h-52 border flex justify-center items-center rounded-lg bg-slate-100 hover:scale-105 cursor-pointer hover:shadow-sm transition-all duration-300 ease-in-out border-dashed;
+}
+.btn {
+  @apply bg-blue-500
+  text-white
+  hover:bg-blue-300;
+}
