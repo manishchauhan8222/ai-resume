@@ -3,7 +3,7 @@ import { useParams } from "react-router-dom";
 import FormSection from "../../components/FormSection";
 import ResumePreview from "../../components/ResumePreview";
 import { ResumeInfoContext } from "@/context/ResumeInfoContext";
-import dummy from "@/data/dummy";
+import dummy from "@/data/dummy.jsx";
 import GlobalApi from "./../../../../../service/GlobalApi";
 
 function EditResume() {
