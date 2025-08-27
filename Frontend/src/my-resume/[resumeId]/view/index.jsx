@@ -3,30 +3,22 @@ import { Button } from "@/components/ui/button";
 import { ResumeInfoContext } from "@/context/ResumeInfoContext";
 import ResumePreview from "@/dashboard/resume/components/ResumePreview";
 import React, { useEffect, useState } from "react";
-import GlobalApi from "./../../../../service/GlobalApi";
 import { useParams } from "react-router-dom";
+import { getResumeById } from "../../../../service/localStorageService";
 
 function View() {
   const [resumeInfo, setResumeInfo] = useState(null);
   const { resumeId } = useParams();
 
   useEffect(() => {
-    GetResumeInfo();
-  }, []);
+    const resume = getResumeById(resumeId);
+    setResumeInfo(resume || null);
+  }, [resumeId]);
 
-  const GetResumeInfo = async () => {
-    try {
-      console.log("Fetching resume for ID:", resumeId);
-      const resp = await GlobalApi.GetResumeById(resumeId);
-      console.log("API Response:", resp.data.data);
-      setResumeInfo(resp.data.data);
-    } catch (error) {
-      console.error("Error fetching resume:", error);
-    }
-  };
   const handleDownload = () => {
     window.print();
   };
+
   const handleShare = async () => {
     if (navigator.share) {
       try {
@@ -48,25 +40,42 @@ function View() {
     <ResumeInfoContext.Provider value={{ resumeInfo, setResumeInfo }}>
       <div id="no-print">
         <Header />
-        <div className="my-10 mx-10 md:mx-20 lg:mx-36">
-          <h2 className="text-center text-2xl">
-            Congrats! Your Ultimate AI Resume is ready!
-          </h2>
-          <p className="text-center text-gray-400">
-            Now you can download or share your resume
-          </p>
-          <div className="flex justify-between my-10 gap-20">
-            <Button className="btn" onClick={handleDownload}>
-              Download
-            </Button>
+        <div className="my-10 mx-auto max-w-4xl px-6 text-center">
+          {/* Congrats message */}
+          <div className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-2xl shadow-lg p-8">
+            <h2 className="text-2xl md:text-3xl font-bold">
+              🎉 Congrats! Your Ultimate AI Resume is Ready!
+            </h2>
+            <p className="mt-2 text-blue-100 text-lg">
+              You can now <span className="font-semibold">download</span> or{" "}
+              <span className="font-semibold">share</span> your professionally
+              crafted resume.
+            </p>
 
-            <Button className="btn" onClick={handleShare}>
-              Share
-            </Button>
+            {/* Buttons */}
+            <div className="flex flex-col sm:flex-row justify-center gap-4 mt-6">
+              <Button
+                onClick={handleDownload}
+                className="px-6 py-3 rounded-xl text-lg font-medium shadow-md hover:shadow-xl bg-white text-blue-600 hover:bg-blue-50"
+              >
+                ⬇️ Download
+              </Button>
+              <Button
+                onClick={handleShare}
+                className="px-6 py-3 rounded-xl text-lg font-medium shadow-md hover:shadow-xl bg-white text-blue-600 hover:bg-blue-50"
+              >
+                🚀 Share
+              </Button>
+            </div>
           </div>
         </div>
       </div>
-      <div id="will-print" className="my-10 mx-10 md:mx-20 lg:mx-36">
+
+      {/* Resume Preview Section */}
+      <div
+        id="will-print"
+        className="my-12 mx-auto max-w-4xl bg-white shadow-lg rounded-xl p-6 border"
+      >
         <ResumePreview />
       </div>
     </ResumeInfoContext.Provider>

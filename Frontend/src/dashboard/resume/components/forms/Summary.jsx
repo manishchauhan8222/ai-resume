@@ -3,7 +3,8 @@ import { Textarea } from "@/components/ui/textarea";
 import React, { useContext, useEffect, useState } from "react";
 import { ResumeInfoContext } from "@/context/ResumeInfoContext";
 import { toast } from "sonner";
-import GlobalApi from "./../../../../../service/GlobalApi";
+import { updateResume } from "../../../../../service/localStorageService";
+
 import { useParams } from "react-router-dom";
 import { Brain, LoaderCircle } from "lucide-react";
 import { AIChatSession } from "./../../../../../service/AIModal";
@@ -70,8 +71,7 @@ function Summary({ onNext }) {
           summary: summary,
         },
       };
-      await GlobalApi.UpdateResumeData(params?.resumeId, data);
-
+      await updateResume(params?.resumeId, data.data);
       toast.success("Summary saved successfully");
       if (onNext) onNext();
     } catch (error) {

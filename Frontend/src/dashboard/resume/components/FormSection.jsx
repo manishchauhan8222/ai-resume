@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import PersonalDetails from "./forms/PersonalDetails";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, ArrowRight, Home, LayoutGrid } from "lucide-react";
+import { ArrowLeft, ArrowRight, Home } from "lucide-react";
 import Summary from "./forms/Summary";
 import Experience from "./forms/Experience";
 import Education from "./forms/Education";
@@ -10,16 +10,27 @@ import { useNavigate, Link, useParams } from "react-router-dom";
 import View from "@/my-resume/[resumeId]/view";
 
 function FormSection() {
-  // ✅ Default to step 1 (Personal Details)
   const { resumeId } = useParams();
   const navigate = useNavigate();
-  const [activeFormIndex, setActiveFormIndex] = useState(() => {
-    return parseInt(localStorage.getItem("activeFormIndex")) || 1;
-  });
 
+  const [activeFormIndex, setActiveFormIndex] = useState(1);
+
+  // ✅ Decide starting step: New resume → 1, Existing → last saved step
   useEffect(() => {
-    localStorage.setItem("activeFormIndex", activeFormIndex);
-  }, [activeFormIndex]);
+    const storedStep = localStorage.getItem(`activeFormIndex_${resumeId}`);
+    if (resumeId && storedStep) {
+      setActiveFormIndex(parseInt(storedStep));
+    } else {
+      setActiveFormIndex(1);
+    }
+  }, [resumeId]);
+
+  // ✅ Save progress per resume
+  useEffect(() => {
+    if (resumeId) {
+      localStorage.setItem(`activeFormIndex_${resumeId}`, activeFormIndex);
+    }
+  }, [activeFormIndex, resumeId]);
 
   const goToNextForm = () => {
     if (activeFormIndex < 5) {
@@ -32,23 +43,21 @@ function FormSection() {
       setActiveFormIndex((prev) => prev - 1);
     }
   };
+
   const goToPreview = () => {
     navigate("/my-resume/" + resumeId + "/view");
   };
 
   return (
     <div>
+      {/* Header navigation */}
       <div className="flex justify-between mb-3">
-        <div
-          className="flex
-        gap-2 "
-        >
+        <div className="flex gap-2">
           <Link to={"/dashboard"}>
-            <Button className="btn" variant="outline " size="sm">
-              <Home></Home>
+            <Button className="btn" variant="outline" size="sm">
+              <Home />
             </Button>
           </Link>
-          {/* <ThemeColor></ThemeColor> */}
         </div>
 
         <div className="flex gap-2 items-center">
@@ -94,6 +103,8 @@ function FormSection() {
           goToPreview={goToPreview}
         />
       )}
+
+      {/* Optional step 6: Full preview page */}
       {activeFormIndex === 6 && <View activeFormIndex={6} />}
     </div>
   );

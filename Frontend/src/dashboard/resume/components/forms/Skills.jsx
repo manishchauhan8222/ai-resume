@@ -3,17 +3,15 @@ import { Input } from "@/components/ui/input";
 import React, { useContext, useEffect, useState } from "react";
 import { ResumeInfoContext } from "@/context/ResumeInfoContext";
 import { useParams } from "react-router-dom";
-import GlobalApi from "./../../../../../service/GlobalApi";
 import { toast } from "sonner";
 import { LoaderCircle } from "lucide-react";
 import { Rating } from "@smastrom/react-rating";
 import "@smastrom/react-rating/style.css";
 
-const emptySkill = {
-  name: "",
-  rate: 0,
-};
-
+import {
+  getResumeById,
+  updateResume,
+} from "../../../../../service/localStorageService";
 function Skills({ goToPreview }) {
   const { resumeId } = useParams();
 
@@ -37,18 +35,18 @@ function Skills({ goToPreview }) {
     setSkillList(newEntries);
   };
 
-  const onSave = async () => {
+  const onSave = () => {
     setLoading(true);
-    const data = {
-      data: {
-        skills: skillList,
-      },
-    };
-
     try {
-      const res = await GlobalApi.UpdateResumeData(resumeId, data);
-      console.log("Saved:", res);
+      const resume = getResumeById(resumeId);
+      if (!resume) throw new Error("Resume not found");
+
+      const updated = { ...resume, skills: skillList };
+      updateResume(resumeId, updated);
+
       toast.success("Skills updated!");
+      setResumeInfo(updated);
+
       if (goToPreview) {
         goToPreview();
       }
@@ -59,6 +57,14 @@ function Skills({ goToPreview }) {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    // Initialize skills from resume if available
+    const resume = getResumeById(resumeId);
+    if (resume?.skills) {
+      setSkillList(resume.skills);
+    }
+  }, [resumeId]);
 
   useEffect(() => {
     setResumeInfo({ ...resumeInfo, skills: skillList });

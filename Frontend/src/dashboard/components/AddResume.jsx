@@ -7,89 +7,79 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useUser } from "@clerk/clerk-react";
-import GlobalApi from "./../../../service/GlobalApi";
 import { useNavigate } from "react-router-dom";
-function AddResume() {
-  const [opendailog, setOpenDailog] = useState(false);
-  const [resumeTitle, setResumeTitle] = useState();
-  const [loading, setLoading] = useState(false);
-  const navigatation = useNavigate();
 
-  const { user } = useUser();
+function AddResume({ onResumeCreated }) {
+  const [openDialog, setOpenDialog] = useState(false);
+  const [resumeTitle, setResumeTitle] = useState("");
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
+
   const onCreate = () => {
     setLoading(true);
     const uuid = uuidv4();
-    const data = {
-      data: {
-        title: resumeTitle,
-        resumeId: uuid,
-        userEmail: user?.primaryEmailAddress?.emailAddress,
-        userName: user?.fullName,
-      },
+
+    const newResume = {
+      id: uuid,
+      title: resumeTitle,
+      sections: {},
     };
-    GlobalApi.CreateNewResume(data)
-      .then((res) => {
-        console.log(res.data.data.documentId);
-        if (res) {
-          setLoading(false);
-          navigatation(`/dashboard/resume/${res.data.data.documentId}/edit`);
-        }
-      })
-      .catch((err) => {
-        console.error("Error:", err?.response?.data || err.message);
-      })
-      .finally(() => {
-        setLoading(false);
-      });
+
+    const storedResumes = JSON.parse(localStorage.getItem("resumes")) || [];
+    const updatedResumes = [...storedResumes, newResume];
+
+    localStorage.setItem("resumes", JSON.stringify(updatedResumes));
+    onResumeCreated(updatedResumes);
+
+    setLoading(false);
+    setOpenDialog(false);
+    navigate(`/dashboard/resume/${uuid}/edit`);
   };
+
   return (
-    <div className="">
-      <div className=" resume-list" onClick={() => setOpenDailog(true)}>
-        <PlusSquare></PlusSquare>
+    <div>
+      {/* Add Resume Card */}
+      <div
+        className="resume-list w-40 h-40 md:w-56 md:h-56 flex flex-col items-center justify-center border-2 border-dashed border-blue-400 rounded-xl bg-white hover:shadow-md cursor-pointer transition-all duration-300 ease-in-out"
+        onClick={() => setOpenDialog(true)}
+      >
+        <PlusSquare className="w-10 h-10 text-blue-500 mb-2" />
+        <p className="text-sm font-medium text-blue-600">New Resume</p>
       </div>
-      <Dialog open={opendailog} onOpenChange={setOpenDailog}>
-        <DialogContent>
+
+      {/* Dialog for creating resume */}
+      <Dialog open={openDialog} onOpenChange={setOpenDialog}>
+        <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>Create New Resume</DialogTitle>
             <DialogDescription>
               <div className="mb-5 mt-2">
-                <p>Add a title of your new resume</p>
+                <p className="text-gray-600">Add a title for your new resume</p>
                 <Input
                   className="mt-2"
-                  placeholder="Ex. Full Stack resume"
+                  placeholder="Ex. Full Stack Developer Resume"
                   onChange={(e) => setResumeTitle(e.target.value)}
+                  value={resumeTitle}
                 />
               </div>
             </DialogDescription>
-
-            <div className="flex gap-5 justify-end">
-              <Button
-                variant="Ghost"
-                className=""
-                onClick={() => {
-                  setOpenDailog(false);
-                }}
-              >
-                Cancel
-              </Button>
-              <Button
-                disabled={!resumeTitle || loading}
-                className="bg-blue-500"
-                onClick={() => onCreate()}
-              >
-                {loading ? (
-                  <Loader2 className="animate-spin"></Loader2>
-                ) : (
-                  "Create"
-                )}
-              </Button>
-            </div>
           </DialogHeader>
+
+          <div className="flex gap-3 justify-end">
+            <Button variant="ghost" onClick={() => setOpenDialog(false)}>
+              Cancel
+            </Button>
+            <Button
+              disabled={!resumeTitle || loading}
+              className="bg-blue-500 hover:bg-blue-600 text-white"
+              onClick={onCreate}
+            >
+              {loading ? <Loader2 className="animate-spin" /> : "Create"}
+            </Button>
+          </div>
         </DialogContent>
       </Dialog>
     </div>

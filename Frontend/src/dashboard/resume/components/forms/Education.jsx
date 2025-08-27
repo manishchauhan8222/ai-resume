@@ -4,7 +4,7 @@ import React, { useContext, useEffect, useState } from "react";
 import RichTextEditor from "../RichTextEditor";
 import { ResumeInfoContext } from "@/context/ResumeInfoContext";
 import { useParams } from "react-router-dom";
-import GlobalApi from "./../../../../../service/GlobalApi";
+import { updateResume } from "../../../../../service/localStorageService";
 import { toast } from "sonner";
 import { LoaderCircle } from "lucide-react";
 
@@ -81,7 +81,7 @@ function Education({ onNext, activeFormIndex }) {
     };
 
     try {
-      const res = await GlobalApi.UpdateResumeData(params?.resumeId, data);
+      const res = await updateResume(params?.resumeId, data.data);
       console.log("Saved:", res);
       toast.success("Details updated!");
       if (onNext) onNext();

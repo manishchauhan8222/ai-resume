@@ -24,10 +24,10 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 
-import React, { useContext, useState } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import GlobalApi from "./../../../service/GlobalApi";
 import { toast } from "sonner";
+import { deleteResume } from "../../../service/localStorageService";
 
 function ResumeItem({ resume, refreshData }) {
   const navigate = useNavigate();
@@ -35,31 +35,44 @@ function ResumeItem({ resume, refreshData }) {
   const [loading, setLoading] = useState(false);
 
   const openResume = () => {
-    navigate("/dashboard/resume/" + resume.documentId + "/edit");
+    navigate("/dashboard/resume/" + resume.id + "/edit");
   };
 
   const viewResume = () => {
-    navigate(`/my-resume/${resume.documentId}/view`);
+    navigate(`/my-resume/${resume.id}/view`);
   };
 
   const downloadResume = () => {
-    // Navigate to view page and trigger print
-    navigate(`/my-resume/${resume.documentId}/view`, {
+    navigate(`/my-resume/${resume.id}/view`, {
       state: { download: true },
     });
   };
 
+  const handleDelete = () => {
+    setLoading(true);
+    try {
+      deleteResume(resume.id);
+      toast.success("Resume Deleted!");
+      refreshData();
+      setOpenAlert(false);
+    } catch {
+      toast.error("Failed to delete resume");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
-    <div className="relative">
-      <div className="resume-list w-56 h-56 flex flex-col border rounded-xl bg-white hover:shadow-lg transition-all duration-300 ease-in-out">
-        {/* Top Icon */}
-        <div className="flex justify-center items-center mt-6">
-          <Notebook size={56} className="text-blue-500" />
+    <div className="">
+      <div className="resume-list aspect-square w-32 sm:w-40 md:w-48 lg:w-56 flex flex-col border rounded-xl bg-white hover:shadow-md transition-all duration-300 ease-in-out">
+        {/* Icon */}
+        <div className="flex justify-center items-center flex-1">
+          <Notebook size={48} className="text-blue-500" />
         </div>
 
-        {/* Bottom title and dropdown */}
-        <div className="  bg-blue-500 text-white flex justify-between items-center px-4 py-2 rounded-b-lg w-full mt-auto">
-          <h2 className="text-sm font-semibold truncate max-w-[120px]">
+        {/* Title + Actions */}
+        <div className="bg-blue-500 text-white flex justify-between items-center px-3 py-2 rounded-b-xl w-full">
+          <h2 className="text-xs md:text-sm font-medium truncate max-w-[80px] md:max-w-[120px]">
             {resume.title}
           </h2>
 
@@ -72,19 +85,19 @@ function ResumeItem({ resume, refreshData }) {
             <DropdownMenuContent className="w-40 bg-white shadow-lg rounded-lg p-1">
               <DropdownMenuItem
                 onClick={openResume}
-                className="flex items-center gap-2 hover:bg-gray-100 rounded-md px-2"
+                className="flex items-center gap-2"
               >
                 <Edit size={16} /> Edit
               </DropdownMenuItem>
               <DropdownMenuItem
                 onClick={viewResume}
-                className="flex items-center gap-2 hover:bg-gray-100 rounded-md px-2"
+                className="flex items-center gap-2"
               >
                 <Eye size={16} /> View
               </DropdownMenuItem>
               <DropdownMenuItem
                 onClick={downloadResume}
-                className="flex items-center gap-2 hover:bg-gray-100 rounded-md px-2"
+                className="flex items-center gap-2"
               >
                 <Download size={16} /> Download
               </DropdownMenuItem>
@@ -96,60 +109,37 @@ function ResumeItem({ resume, refreshData }) {
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
-
-          {/* Delete Confirmation Dialog */}
-          <AlertDialog open={openAlert} onOpenChange={setOpenAlert}>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                <AlertDialogDescription>
-                  This action cannot be undone. This will permanently delete
-                  your resume and remove your data from our servers.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel
-                  disabled={loading}
-                  onClick={() => {
-                    setLoading(false);
-                    setOpenAlert(false);
-                  }}
-                >
-                  Cancel
-                </AlertDialogCancel>
-
-                {/* Custom delete button */}
-                <button
-                  type="button"
-                  onClick={async () => {
-                    setLoading(true);
-                    try {
-                      await GlobalApi.DeleteResumeById(resume.documentId);
-                      toast.success("Resume Deleted!");
-                      refreshData();
-                      setOpenAlert(false); // ✅ Close ONLY after delete is done
-                    } catch (error) {
-                      toast.error("Failed to delete resume");
-                    } finally {
-                      setLoading(false);
-                    }
-                  }}
-                  disabled={loading}
-                  className="bg-red-600 text-white rounded-md px-4 py-2 flex items-center gap-2 hover:bg-red-700"
-                >
-                  {loading ? (
-                    <Loader2Icon className="animate-spin" />
-                  ) : (
-                    <>
-                      <DeleteIcon size={16} /> Delete
-                    </>
-                  )}
-                </button>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
         </div>
       </div>
+
+      {/* Delete Confirmation */}
+      <AlertDialog open={openAlert} onOpenChange={setOpenAlert}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete your resume.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={loading}>Cancel</AlertDialogCancel>
+            <button
+              type="button"
+              onClick={handleDelete}
+              disabled={loading}
+              className="bg-red-600 text-white rounded-md px-4 py-2 flex items-center gap-2 hover:bg-red-700"
+            >
+              {loading ? (
+                <Loader2Icon className="animate-spin" />
+              ) : (
+                <>
+                  <DeleteIcon size={16} /> Delete
+                </>
+              )}
+            </button>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
