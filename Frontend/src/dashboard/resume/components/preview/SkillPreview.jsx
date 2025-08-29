@@ -24,7 +24,8 @@ function SkillPreview({ resumeInfo }) {
                 className="h-2 rounded transition-all duration-500 ease-in-out"
                 style={{
                   backgroundColor: resumeInfo?.themeColor,
-                  width: `${(skill?.rate / 5) * 100}%`, // 0–100% based on rating
+                  width: `${(skill?.rate / 5) * 100}%`,
+                  // 0–100% based on rating
                 }}
               ></div>
             </div>

@@ -20,7 +20,8 @@ function ExperiencePreview({ resumeInfo }) {
             </span>
           </div>
           <p className="text-sm text-gray-500">
-            {exp.startDate} To {exp.endDate ? exp.endDate : "Present"}
+            {exp.startDate} <span className="text-black">To</span>{" "}
+            {exp.endDate ? exp.endDate : "Present"}
           </p>
           <div
             className="text-sm my-2"

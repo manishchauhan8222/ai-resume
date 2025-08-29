@@ -20,9 +20,10 @@ function EducationalPreview({ resumeInfo }) {
             </span>
           </div>
 
-          <h3 className="text-sm ml-3">{edu.degree}</h3>
+          <h3 className="text-sm">{edu.degree}</h3>
           <span className="text-s text-gray-500">
-            {edu.startDate} To {edu.currentlyStudying ? "Present" : edu.endDate}
+            {edu.startDate} <span className="text-black">To</span>{" "}
+            {edu.currentlyStudying ? "Present" : edu.endDate}
           </span>
 
           <div

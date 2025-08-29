@@ -85,24 +85,24 @@ function ResumeItem({ resume, refreshData }) {
             <DropdownMenuContent className="w-40 bg-white shadow-lg rounded-lg p-1">
               <DropdownMenuItem
                 onClick={openResume}
-                className="flex items-center gap-2"
+                className="flex items-center gap-2 cursor-pointer"
               >
                 <Edit size={16} /> Edit
               </DropdownMenuItem>
               <DropdownMenuItem
                 onClick={viewResume}
-                className="flex items-center gap-2"
+                className="flex items-center gap-2 cursor-pointer"
               >
                 <Eye size={16} /> View
               </DropdownMenuItem>
               <DropdownMenuItem
                 onClick={downloadResume}
-                className="flex items-center gap-2"
+                className="flex items-center gap-2 cursor-pointer"
               >
                 <Download size={16} /> Download
               </DropdownMenuItem>
               <DropdownMenuItem
-                className="flex items-center gap-2 text-red-500 hover:bg-red-50 rounded-md px-2"
+                className="flex items-center gap-2 text-red-500 hover:bg-red-50 rounded-md px-2 cursor-pointer"
                 onClick={() => setOpenAlert(true)}
               >
                 <DeleteIcon size={16} /> Delete

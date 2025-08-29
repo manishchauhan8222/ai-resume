@@ -32,7 +32,9 @@ function PersonalDetail({ onNext }) {
       [name]: value,
     }));
   };
-
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
   const onSave = async (e) => {
     e.preventDefault();
     setLoading(true);

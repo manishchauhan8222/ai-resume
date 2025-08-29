@@ -92,7 +92,9 @@ function Education({ onNext, activeFormIndex }) {
       setLoading(false);
     }
   };
-
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
   return (
     <div>
       <div className="p-5 shadow-lg rounded-lg border-t-primary border-t-4 mt-10">
@@ -168,14 +170,14 @@ function Education({ onNext, activeFormIndex }) {
             </div>
           ))}
         </div>
-        <div className="flex justify-between">
+        <div className="">
           <div className="flex gap-2">
             <Button
               variant="outline"
               onClick={AddNewEducation}
               className="text-blue-500 border-blue-500 hover:bg-blue-500 hover:text-white"
             >
-              + Add More Education
+              + Add More
             </Button>
             <Button
               variant="outline"
@@ -185,6 +187,9 @@ function Education({ onNext, activeFormIndex }) {
               - Remove
             </Button>
           </div>
+        </div>
+        <div className="flex justify-end mt-4">
+          {" "}
           <Button disabled={loading} onClick={onSave} className=" btn">
             {loading ? <LoaderCircle className="animate-spin" /> : "Save"}
           </Button>

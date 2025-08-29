@@ -61,7 +61,9 @@ function Experience({ onNext, activeFormIndex }) {
       setExperinceList(experinceList.slice(0, -1));
     }
   };
-
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
   const onSave = async () => {
     setLoading(true);
     const data = {
@@ -168,23 +170,25 @@ function Experience({ onNext, activeFormIndex }) {
             </div>
           ))}
         </div>
-        <div className="flex justify-between">
+        <div className="">
           <div className="flex gap-2">
             <Button
               variant="outline"
               onClick={AddNewExperience}
-              className="text-blue-500 border-blue-500 hover:bg-blue-500 hover:text-white"
+              className="text-blue-500 cursor-pointer border-blue-500 hover:bg-blue-500 hover:text-white"
             >
-              + Add More Experience
+              + Add More
             </Button>
             <Button
               variant="outline"
               onClick={RemoveExperience}
-              className="text-blue-500 border-blue-500 hover:bg-blue-500 hover:text-white"
+              className="text-blue-500 cursor-pointer border-blue-500 hover:bg-blue-500 hover:text-white"
             >
               - Remove
             </Button>
           </div>
+        </div>
+        <div className="flex justify-end mt-4">
           <Button disabled={loading} onClick={onSave} className=" btn">
             {loading ? <LoaderCircle className="animate-spin" /> : "Save"}
           </Button>

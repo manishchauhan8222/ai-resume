@@ -15,12 +15,13 @@ import {
 function Skills({ goToPreview }) {
   const { resumeId } = useParams();
 
-  const [skillList, setSkillList] = useState([{ name: "", rate: 0 }]);
+  const [skillList, setSkillList] = useState([{ name: "", rate: 1 }]);
+
   const { resumeInfo, setResumeInfo } = useContext(ResumeInfoContext);
   const [loading, setLoading] = useState(false);
 
   const AddNewSkill = () => {
-    setSkillList([...skillList, { name: "", rate: 0 }]);
+    setSkillList([...skillList, { name: "", rate: 1 }]);
   };
 
   const RemoveSkill = () => {
@@ -28,10 +29,9 @@ function Skills({ goToPreview }) {
       setSkillList(skillList.slice(0, -1));
     }
   };
-
   const handleChange = (index, name, value) => {
     const newEntries = [...skillList];
-    newEntries[index][name] = value;
+    newEntries[index][name] = name === "rate" ? Number(value) : value;
     setSkillList(newEntries);
   };
 
@@ -41,10 +41,16 @@ function Skills({ goToPreview }) {
       const resume = getResumeById(resumeId);
       if (!resume) throw new Error("Resume not found");
 
-      const updated = { ...resume, skills: skillList };
+      const updated = {
+        ...resume,
+        skills: skillList.map((s) => ({ ...s, rate: Number(s.rate) })),
+      };
+
       updateResume(resumeId, updated);
 
       toast.success("Skills updated!");
+
+      // ✅ Ensure context gets latest resume
       setResumeInfo(updated);
 
       if (goToPreview) {
@@ -59,16 +65,19 @@ function Skills({ goToPreview }) {
   };
 
   useEffect(() => {
-    // Initialize skills from resume if available
     const resume = getResumeById(resumeId);
     if (resume?.skills) {
-      setSkillList(resume.skills);
+      setSkillList(resume.skills.map((s) => ({ ...s, rate: Number(s.rate) })));
     }
   }, [resumeId]);
 
   useEffect(() => {
-    setResumeInfo({ ...resumeInfo, skills: skillList });
-  }, [skillList]);
+    setResumeInfo((prev) => ({ ...prev, skills: skillList }));
+  }, [skillList, setResumeInfo]);
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
 
   return (
     <div>
