@@ -19,78 +19,82 @@ const emptyExperience = {
 };
 
 function Experience({ onNext, activeFormIndex }) {
-  const [experinceList, setExperinceList] = useState([]);
   const { resumeInfo, setResumeInfo } = useContext(ResumeInfoContext);
   const params = useParams();
   const [loading, setLoading] = useState(false);
 
-  // ✅ Load data from context when component mounts
-  useEffect(() => {
-    if (resumeInfo?.experience?.length > 0) {
-      setExperinceList(resumeInfo.experience);
-    }
-  }, [resumeInfo]);
+  // ✅ Initialize state without double overwrite
+  const [experienceList, setExperienceList] = useState(
+    resumeInfo?.experience?.length > 0
+      ? resumeInfo.experience
+      : [{ ...emptyExperience }]
+  );
 
-  // ✅ Update context whenever experience list changes
+  // ✅ Keep context in sync
   useEffect(() => {
     setResumeInfo((prev) => ({
       ...prev,
-      experience: experinceList,
+      experience: experienceList,
     }));
-  }, [experinceList]);
+  }, [experienceList]);
 
   const handleChange = (index, event) => {
     const { name, value } = event.target;
-    const newEntries = [...experinceList];
-    newEntries[index][name] = value;
-    setExperinceList(newEntries);
+    setExperienceList((prev) =>
+      prev.map((exp, i) => (i === index ? { ...exp, [name]: value } : exp))
+    );
   };
 
   const handleRichTextEditor = (e, name, index) => {
-    const newEntries = [...experinceList];
-    newEntries[index][name] = e.target.value;
-    setExperinceList(newEntries);
+    const { value } = e.target;
+    setExperienceList((prev) =>
+      prev.map((exp, i) => (i === index ? { ...exp, [name]: value } : exp))
+    );
   };
 
   const AddNewExperience = () => {
-    setExperinceList([...experinceList, { ...emptyExperience }]);
+    setExperienceList((prev) => [...prev, { ...emptyExperience }]);
   };
 
   const RemoveExperience = () => {
-    if (experinceList.length > 0) {
-      setExperinceList(experinceList.slice(0, -1));
-    }
+    setExperienceList((prev) => (prev.length > 1 ? prev.slice(0, -1) : prev));
   };
-  useEffect(() => {
-    window.scrollTo(0, 0);
-  }, []);
+
   const onSave = async () => {
+    if (
+      experienceList.every(
+        (item) =>
+          !item.position &&
+          !item.companyName &&
+          !item.city &&
+          !item.state &&
+          !item.startDate &&
+          !item.endDate &&
+          !item.workSummary
+      )
+    ) {
+      toast.error(
+        "Please add at least one valid experience entry before saving."
+      );
+      return;
+    }
+
     setLoading(true);
     const data = {
-      data: {
-        experience: experinceList.map((item) => ({
-          position: item.position,
-          companyName: item.companyName,
-          city: item.city,
-          state: item.state,
-          startDate: item.startDate,
-          endDate:
-            item.endDate && item.endDate.trim() !== ""
-              ? item.endDate
-              : "Present",
-          workSummary: item.workSummary,
-        })),
-      },
+      experience: experienceList.map((item) => ({
+        ...item,
+        endDate:
+          item.endDate && item.endDate.trim() !== "" ? item.endDate : "Present",
+      })),
     };
 
     try {
-      const res = await updateResume(params?.resumeId, data.data);
-      console.log("Saved:", res);
-      toast.success("Details updated!");
+      await updateResume(params?.resumeId, data);
+      toast.success("Experience details updated!");
       if (onNext) onNext();
     } catch (error) {
       console.error("Save failed:", error);
-      toast.error("Failed to update details");
+      toast.error("Failed to update experience details");
     } finally {
       setLoading(false);
     }
@@ -100,9 +104,10 @@ function Experience({ onNext, activeFormIndex }) {
     <div>
       <div className="p-5 shadow-lg rounded-lg border-t-primary border-t-4 mt-10">
         <h2 className="font-bold text-lg">Professional Experience</h2>
-        <p>Add Your previous Job experience</p>
+        <p>Add your previous job experience</p>
+
         <div>
-          {experinceList.map((item, index) => (
+          {experienceList.map((item, index) => (
             <div
               key={index}
               className="grid grid-cols-2 gap-3 border p-3 my-5 rounded-lg"
@@ -170,26 +175,26 @@ function Experience({ onNext, activeFormIndex }) {
             </div>
           ))}
         </div>
-        <div className="">
-          <div className="flex gap-2">
-            <Button
-              variant="outline"
-              onClick={AddNewExperience}
-              className="text-blue-500 cursor-pointer border-blue-500 hover:bg-blue-500 hover:text-white"
-            >
-              + Add More
-            </Button>
-            <Button
-              variant="outline"
-              onClick={RemoveExperience}
-              className="text-blue-500 cursor-pointer border-blue-500 hover:bg-blue-500 hover:text-white"
-            >
-              - Remove
-            </Button>
-          </div>
+
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            onClick={AddNewExperience}
+            className="text-blue-500 border-blue-500 hover:bg-blue-500 hover:text-white"
+          >
+            + Add More
+          </Button>
+          <Button
+            variant="outline"
+            onClick={RemoveExperience}
+            className="text-blue-500 border-blue-500 hover:bg-blue-500 hover:text-white"
+          >
+            - Remove
+          </Button>
         </div>
+
         <div className="flex justify-end mt-4">
-          <Button disabled={loading} onClick={onSave} className=" btn">
+          <Button disabled={loading} onClick={onSave} className="btn">
             {loading ? <LoaderCircle className="animate-spin" /> : "Save"}
           </Button>
         </div>

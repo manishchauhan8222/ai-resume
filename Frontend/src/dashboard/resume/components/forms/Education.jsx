@@ -10,12 +10,11 @@ import { LoaderCircle } from "lucide-react";
 
 const emptyEducation = {
   universityName: "",
-
+  degree: "",
   startDate: "",
   endDate: "",
   eduCity: "",
   eduState: "",
-  degree: "",
   description: "",
 };
 
@@ -25,14 +24,16 @@ function Education({ onNext, activeFormIndex }) {
   const params = useParams();
   const [loading, setLoading] = useState(false);
 
-  // ✅ Load data from context when component mounts
+  // ✅ Load from context or start with one blank form
   useEffect(() => {
     if (resumeInfo?.education?.length > 0) {
       setEducationList(resumeInfo.education);
+    } else {
+      setEducationList([{ ...emptyEducation }]);
     }
   }, [resumeInfo]);
 
-  // ✅ Update context whenever education list changes
+  // ✅ Sync with context
   useEffect(() => {
     setResumeInfo((prev) => ({
       ...prev,
@@ -42,64 +43,84 @@ function Education({ onNext, activeFormIndex }) {
 
   const handleChange = (index, event) => {
     const { name, value } = event.target;
-    const newEntries = [...educationList];
-    newEntries[index][name] = value;
-    setEducationList(newEntries);
+    setEducationList((prev) =>
+      prev.map((edu, i) => (i === index ? { ...edu, [name]: value } : edu))
+    );
   };
+
   const handleRichTextEditor = (e, name, index) => {
-    const newEntries = [...educationList];
-    newEntries[index][name] = e.target.value;
-    setEducationList(newEntries);
+    const { value } = e.target;
+    setEducationList((prev) =>
+      prev.map((edu, i) => (i === index ? { ...edu, [name]: value } : edu))
+    );
   };
+
   const AddNewEducation = () => {
-    setEducationList([...educationList, { ...emptyEducation }]);
+    setEducationList((prev) => [...prev, { ...emptyEducation }]);
   };
 
   const RemoveEducation = () => {
-    if (educationList.length > 0) {
-      setEducationList(educationList.slice(0, -1));
-    }
+    setEducationList((prev) => (prev.length > 1 ? prev.slice(0, -1) : prev));
   };
 
   const onSave = async () => {
+    // ✅ validation: require at least one filled form
+    if (
+      educationList.length === 0 ||
+      educationList.every(
+        (item) =>
+          !item.universityName &&
+          !item.degree &&
+          !item.eduCity &&
+          !item.eduState &&
+          !item.startDate &&
+          !item.endDate &&
+          !item.description
+      )
+    ) {
+      toast.error(
+        "Please add at least one valid education entry before saving."
+      );
+      return;
+    }
+
     setLoading(true);
     const data = {
-      data: {
-        education: educationList.map((item) => ({
-          universityName: item.universityName,
-          startDate: item.startDate,
-          endDate:
-            item.endDate && item.endDate.trim() !== ""
-              ? item.endDate
-              : "Present",
-          eduCity: item.eduCity,
-          eduState: item.eduState,
-          degree: item.degree,
-          description: item.description,
-        })),
-      },
+      education: educationList.map((item) => ({
+        universityName: item.universityName,
+        degree: item.degree,
+        startDate: item.startDate,
+        endDate:
+          item.endDate && item.endDate.trim() !== "" ? item.endDate : "Present",
+        eduCity: item.eduCity,
+        eduState: item.eduState,
+        description: item.description,
+      })),
     };
 
     try {
-      const res = await updateResume(params?.resumeId, data.data);
+      const res = await updateResume(params?.resumeId, data);
       console.log("Saved:", res);
-      toast.success("Details updated!");
+      toast.success("Education details updated!");
       if (onNext) onNext();
     } catch (error) {
       console.error("Save failed:", error);
-      toast.error("Failed to update details");
+      toast.error("Failed to update education details");
     } finally {
       setLoading(false);
     }
   };
+
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
+
   return (
     <div>
       <div className="p-5 shadow-lg rounded-lg border-t-primary border-t-4 mt-10">
         <h2 className="font-bold text-lg">Education Details</h2>
-        <p>Add Your Education Details</p>
+        <p>Add your education details</p>
+
         <div>
           {educationList.map((item, index) => (
             <div
@@ -156,7 +177,6 @@ function Education({ onNext, activeFormIndex }) {
                   onChange={(event) => handleChange(index, event)}
                 />
               </div>
-
               <div className="col-span-2">
                 <RichTextEditor
                   index={index}
@@ -170,27 +190,26 @@ function Education({ onNext, activeFormIndex }) {
             </div>
           ))}
         </div>
-        <div className="">
-          <div className="flex gap-2">
-            <Button
-              variant="outline"
-              onClick={AddNewEducation}
-              className="text-blue-500 border-blue-500 hover:bg-blue-500 hover:text-white"
-            >
-              + Add More
-            </Button>
-            <Button
-              variant="outline"
-              onClick={RemoveEducation}
-              className="text-blue-500 border-blue-500 hover:bg-blue-500 hover:text-white"
-            >
-              - Remove
-            </Button>
-          </div>
+
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            onClick={AddNewEducation}
+            className="text-blue-500 border-blue-500 hover:bg-blue-500 hover:text-white"
+          >
+            + Add More
+          </Button>
+          <Button
+            variant="outline"
+            onClick={RemoveEducation}
+            className="text-blue-500 border-blue-500 hover:bg-blue-500 hover:text-white"
+          >
+            - Remove
+          </Button>
         </div>
+
         <div className="flex justify-end mt-4">
-          {" "}
-          <Button disabled={loading} onClick={onSave} className=" btn">
+          <Button disabled={loading} onClick={onSave} className="btn">
             {loading ? <LoaderCircle className="animate-spin" /> : "Save"}
           </Button>
         </div>
